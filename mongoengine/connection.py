@@ -1,3 +1,4 @@
+import warnings
 import pymongo
 from pymongo import (MongoClient, MongoReplicaSetClient, ReadPreference,
                      uri_parser)
@@ -36,6 +37,7 @@ def register_connection(
     slaves=None,
     username=None,
     password=None,
+    uuidrepresentation=None,
     **kwargs
 ):
     """Add a connection.
@@ -84,7 +86,22 @@ def register_connection(
         })
         if "replicaSet" in host:
             conn_settings['replicaSet'] = True
+        if "uuidrepresentation" in uri_dict:
+            uuidrepresentation = uri_dict.get('uuidrepresentation')
 
+    if uuidrepresentation is None:
+        warnings.warn(
+            "No uuidrepresentation is specified! Falling back to "
+            "'pythonLegacy' which is the default for pymongo 3.x. "
+            "For compatibility with other MongoDB drivers this should be "
+            "specified as 'standard' or '{java,csharp}Legacy' to work with "
+            "older drivers in those languages. This will be changed to "
+            "'unspecified' in a future release.",
+            DeprecationWarning,
+            stacklevel=3,
+        )
+        uuidrepresentation = "pythonLegacy"
+    conn_settings['uuidrepresentation'] = uuidrepresentation
     conn_settings.update(kwargs)
     _connection_settings[alias] = conn_settings
 
