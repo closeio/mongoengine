@@ -72,6 +72,18 @@ class ConnectionTest(unittest.TestCase):
         date_doc = DateDoc.objects.first()
         self.assertEqual(d, date_doc.the_date)
 
+    def test_connect_uri_uuidrepresentation_default_to_pythonlegacy(self):
+        conn = connect('mongoenginetest')
+        self.assertEqual(conn.options.codec_options.uuid_representation,
+                         pymongo.common._UUID_REPRESENTATIONS['pythonLegacy'])
+
+    def test_connect_uri_uuidrepresentation_set_as_arg(self):
+        for uuid_representation_key in ["uuidrepresentation",
+                                        "uuid_representation", "uuidRepresentation"]:
+            conn = connect('mongoenginetest', **{uuid_representation_key: "javaLegacy"})
+            self.assertEqual(conn.options.codec_options.uuid_representation,
+                            pymongo.common._UUID_REPRESENTATIONS['javaLegacy'])
+
 
 if __name__ == '__main__':
     unittest.main()
