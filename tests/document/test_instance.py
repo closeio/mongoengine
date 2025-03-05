@@ -5,6 +5,7 @@ sys.path[0:0] = [""]
 import bson
 import os
 import pickle
+import pytest
 import unittest
 import uuid
 
@@ -2214,8 +2215,18 @@ class InstanceTest(unittest.TestCase):
         group = Group.objects.first()
         self.assertEqual("hello - default", group.name)
 
-    def test_no_overwritting_no_data_loss(self):
+    def test_reject_nonexistent_fields(self):
+        class User(Document):
+            username = StringField(primary_key=True)
+            name = StringField()
 
+        # The `foo` parameter is rejected because the field is not defined
+        # on the document.
+        with pytest.raises(TypeError) as excinfo:
+            User(username="Ross", foo="bar")
+        assert str(excinfo.value) == "User.__init__() got an unexpected keyword argument 'foo'"
+
+    def test_no_overwriting_no_data_loss(self):
         class User(Document):
             username = StringField(primary_key=True)
             name = StringField()
@@ -2225,19 +2236,17 @@ class InstanceTest(unittest.TestCase):
                 return True
 
         User.drop_collection()
-
-        user = User(username="Ross", foo="bar")
-        self.assertTrue(user.foo)
-
         User._get_collection().insert_one(
             {"_id": "Ross", "foo": "Bar", "data": [1, 2, 3]}
         )
 
+        # The `foo` property is NOT overwritten by the database field's
+        # value because the field is not defined on the document.
         user = User.objects.first()
-        self.assertEqual("Ross", user.username)
-        self.assertEqual(True, user.foo)
-        self.assertEqual("Bar", user._db_data["foo"])
-        self.assertEqual([1, 2, 3], user._db_data["data"])
+        assert user.username == "Ross"
+        assert user.foo is True
+        assert user._db_data["foo"] == "Bar"
+        assert user._db_data["data"] == [1, 2, 3]
 
     @unittest.skip("DynamicDocument not implemented")
     def test_spaces_in_keys(self):

@@ -972,10 +972,10 @@ class FieldTest(unittest.TestCase):
 
         Asset.drop_collection()
 
-        root = Asset(name='', path="/", title="Site Root")
+        root = Asset(name="Site Root")
         root.save()
 
-        company = Asset(name='company', title='Company', parent=root, parents=[root])
+        company = Asset(name='Company', parent=root, parents=[root])
         company.save()
 
         root.children = [company]
