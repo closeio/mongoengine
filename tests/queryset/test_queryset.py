@@ -1286,7 +1286,7 @@ class QuerySetTest(unittest.TestCase):
 
         BlogPost.drop_collection()
 
-        post = BlogPost(name="Test Post", hits=5, tags=['test'])
+        post = BlogPost(title="Test Post", hits=5, tags=['test'])
         post.save()
 
         BlogPost.objects.update(set__hits=10)
@@ -2485,7 +2485,7 @@ class QuerySetTest(unittest.TestCase):
         class Foo(EmbeddedDocument):
             shape = StringField()
             color = StringField()
-            trick = BooleanField()
+            thick = BooleanField()
             meta = {'allow_inheritance': False}
 
         class Bar(Document):
