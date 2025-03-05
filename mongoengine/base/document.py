@@ -41,7 +41,12 @@ class BaseDocument(object):
         _set(self, '_changed_fields', set())
         if values:
             pk = values.pop('pk', None)
-            for field in set(self._fields.keys()).intersection(list(values.keys())):
+            for field, value in values.items():
+                if field not in self._fields:
+                    raise TypeError(
+                        f"{self.__class__.__name__}.__init__() got "
+                        f"an unexpected keyword argument {field!r}"
+                    )
                 setattr(self, field, values[field])
             if pk != None:
                 self.pk = pk
